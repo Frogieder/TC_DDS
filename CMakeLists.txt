@@ -16,12 +16,15 @@ add_executable(${PROJECT})
 target_sources(${PROJECT} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src/main.c
         ${CMAKE_CURRENT_SOURCE_DIR}/src/usb_descriptors.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/DDS.c
         )
 
 # Example include
 target_include_directories(${PROJECT} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         )
+
+target_link_libraries(${PROJECT} PUBLIC pico_multicore hardware_pwm)
 
 # Configure compilation flags and libraries for the example... see the corresponding function
 # in hw/bsp/FAMILY/family.cmake for details.
