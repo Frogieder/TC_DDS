@@ -24,7 +24,7 @@ target_include_directories(${PROJECT} PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/src
         )
 
-target_link_libraries(${PROJECT} PUBLIC pico_multicore hardware_pwm)
+target_link_libraries(${PROJECT} PUBLIC pico_multicore hardware_pwm hardware_adc)
 
 # Configure compilation flags and libraries for the example... see the corresponding function
 # in hw/bsp/FAMILY/family.cmake for details.

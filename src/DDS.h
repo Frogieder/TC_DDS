@@ -7,6 +7,9 @@
 
 #define DDS_OUTPUT_PIN 0
 
+#define log2_CHANNELS 3
+#define CHANNELS (1 << log2_CHANNELS)
+
 /**
  * Entry point for DDS on core 1
  *

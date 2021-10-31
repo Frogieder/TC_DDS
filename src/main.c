@@ -6,6 +6,8 @@
 #include "tusb.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
+#include "hardware/adc.h"
+
 
 #include "DDS.h"
 
@@ -20,7 +22,7 @@ void init_task(void);
 extern uint32_t increment[8];
 extern uint32_t accumulator[8];
 
-int notes[] = {-1, -1, -1, -1, -1 ,-1 ,-1, -1};
+int notes[] = {-1, -1, -1, -1, -1 ,-1 ,-1, -1}; //TODO: set size based on CHANNELS
 
 int active_notes = 0;
 
@@ -36,18 +38,28 @@ int main(void) {
     return 0;
 }
 
+void clear_notes() {
+    active_notes = 0;
+    for (int i = 0; i < CHANNELS; ++i)
+    {
+        increment[i] = 0;
+        notes[i] = -1;
+        accumulator[i] = 0;
+    }
+}
+
 //--------------------------------------------------------------------+
 // Device callbacks
 //--------------------------------------------------------------------+
 
 // Invoked when device is mounted
 void tud_mount_cb(void) {
-
+    clear_notes()
 }
 
 // Invoked when device is unmounted
 void tud_umount_cb(void) {
-
+    clear_notes();
 }
 
 // Invoked when usb bus is suspended
@@ -66,6 +78,11 @@ void tud_resume_cb(void) {
 void init_task(void) {
     gpio_set_dir(25, GPIO_OUT);
     multicore_launch_core1(core1_entry);
+
+    adc_init();
+    adc_gpio_init(26);
+    adc_select_input(0);
+
 }
 
 int find_first(int value, const int *array, int size) {
@@ -79,23 +96,25 @@ int find_first(int value, const int *array, int size) {
 void midi_task(void) {
     uint8_t packet[4];
 
+    // TODO: add frequency control logic here
+
     while (tud_midi_available()) {
         tud_midi_packet_read(packet);
 
         // NoteOn
         if (packet[0] == 9) {
-            uint slice_num = find_first(-1, notes, 8);
+            uint slice_num = find_first(-1, notes, 8); //TODO: CHANNELS stuff
             if (slice_num != -1) {
                 int32_t new_frequency = (int32_t) (440 * exp2f((float) (NOTE - 69) / 12.f));
                 notes[slice_num] = packet[2];
                 active_notes++;
-                increment[slice_num] = 114349 * new_frequency;
+                increment[slice_num] = 114349 * new_frequency; //TODO: replace magic number
             }
         }
 
         // Note Off
         else if (packet[0] == 0x8) {
-            uint slice_num = find_first(NOTE, notes, 8);
+            uint slice_num = find_first(NOTE, notes, 8); //TODO: CHANNELS stuff
             if (slice_num != -1) {
                 notes[slice_num] = -1;
                 active_notes--;
